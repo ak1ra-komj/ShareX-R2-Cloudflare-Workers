@@ -15,7 +15,7 @@ const authMiddleware = (request: Request, env: Env): Response | undefined => {
 	if(request.headers?.get("x-auth-key") !== env.AUTH_KEY && url.searchParams.get("authkey") !== env.AUTH_KEY){
 		return new Response(JSON.stringify({
 			success: false,
-			error: 'Missing auth',
+			message: 'Missing auth',
 		}), {
 			status: 401,
 			headers: {
@@ -64,11 +64,7 @@ router.post("/upload", authMiddleware, async (request: Request, env: Env): Promi
 	}catch(error){
 		return new Response(JSON.stringify({
 			success: false,
-			message: "Error occured writing to R2",
-			error: {
-				name: error.name,
-				message: error.message,
-			},
+			message: error.message,
 		}), {
 			status: 500,
 			headers: {
@@ -89,6 +85,34 @@ router.post("/upload", authMiddleware, async (request: Request, env: Env): Promi
 			"content-type": "application/json",
 		},
 	});
+});
+
+// handle file delete
+router.delete("/file/*", authMiddleware, async (request: Request, env: Env): Promise<Response> => {
+	const url = new URL(request.url);
+	const filename = url.pathname.slice(6);
+
+	try{
+		await env.R2_BUCKET.delete(filename);
+		return new Response(JSON.stringify({
+			success: true,
+			message: filename + " deleted",
+		}), {
+			headers: {
+				"content-type": "application/json",
+			},
+		});
+	}catch(error){
+		return new Response(JSON.stringify({
+			success: false,
+			message: error.message,
+		}), {
+			status: 500,
+			headers: {
+				"content-type": "application/json",
+			},
+		});
+	};
 });
 
 // handle file retrieval
