@@ -93,7 +93,7 @@ router.post('/upload', authMiddleware, async (request, env) => {
 	// return the image url to ShareX
 	const returnUrl = new URL(request.url);
 	returnUrl.searchParams.delete('filename');
-	returnUrl.pathname = `/file/${filename}`;
+	returnUrl.pathname = `/files/${filename}`;
 	if (env.CUSTOM_PUBLIC_BUCKET_DOMAIN) {
 		returnUrl.host = env.CUSTOM_PUBLIC_BUCKET_DOMAIN;
 		returnUrl.pathname = filename;
@@ -174,8 +174,8 @@ router.get('/delete', authMiddleware, async (request, env) => {
 });
 
 router.get('/upload/:id', getFile);
-router.get('/file/*', getFile);
-router.head('/file/*', getFile);
+router.get('/files/*', getFile);
+router.head('/files/*', getFile);
 
 router.get('/files/list', authMiddleware, async (request, env) => {
 	const items = await env.R2_BUCKET.list({ limit: 1000 });
